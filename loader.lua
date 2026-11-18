@@ -6,7 +6,7 @@ local HttpService = clone(game:GetService("HttpService"))
 local LocalPlayer = Players.LocalPlayer
 
 local API = "https://spacehubv2.onrender.com/v1/script"
-local MAX_ATTEMPTS = 3
+local MAX_ATTEMPTS = 8
 local KICK_ON_NETWORK_ERROR = false
 
 local env = getgenv()
@@ -75,7 +75,8 @@ local function validate()
             end
         end
         if attempt < MAX_ATTEMPTS then
-            task.wait(2 * attempt)
+            warn("[Space Hub] Servidor acordando... tentativa " .. attempt .. "/" .. MAX_ATTEMPTS)
+            task.wait(8)
         end
     end
     return nil, nil
