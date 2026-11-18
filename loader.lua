@@ -59,6 +59,8 @@ end
 
 local payload = HttpService:JSONEncode({ key = KEY, hwid = hwid })
 
+local lastStatus, lastBody = nil, nil
+
 local function validate()
     for attempt = 1, MAX_ATTEMPTS do
         local ok, res = pcall(req, {
@@ -70,12 +72,13 @@ local function validate()
         if ok and type(res) == "table" then
             local status = res.StatusCode or res.Status or 0
             local body = res.Body or ""
+            lastStatus, lastBody = status, body
             if status == 200 or (status >= 400 and status < 500) then
                 return status, body
             end
         end
         if attempt < MAX_ATTEMPTS then
-            warn("[Space Hub] Servidor acordando... tentativa " .. attempt .. "/" .. MAX_ATTEMPTS)
+            warn("[Space Hub] Servidor acordando... tentativa " .. attempt .. "/" .. MAX_ATTEMPTS .. " (status " .. tostring(lastStatus) .. ")")
             task.wait(8)
         end
     end
@@ -86,9 +89,9 @@ local status, body = validate()
 
 if status == nil then
     if KICK_ON_NETWORK_ERROR then
-        return kick("Servidor de licenca indisponivel.")
+        return kick("Servidor de licenca indisponivel. Status " .. tostring(lastStatus))
     end
-    return warn("[Space Hub] Servidor de licenca indisponivel. Tente novamente.")
+    return warn("[Space Hub] Servidor de licenca indisponivel. Ultimo status: " .. tostring(lastStatus) .. " | " .. tostring(lastBody):sub(1, 160))
 end
 
 if status == 429 then
